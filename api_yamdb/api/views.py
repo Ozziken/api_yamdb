@@ -1,33 +1,41 @@
-from rest_framework.response import Response
-from permissions import ReadOnly, IsAdmin, AuthorOrAdminOrModeratOrReadOnly
-from serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    TitleSerializer,
-    TitleOnlyReadSerializer,
+from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
 )
 from reviews.models import Category, Genre, Title
-from mixins import CreateUpdateDeleteViewSet
-from rest_framework.pagination import PageNumberPagination
+
+from api.mixins import CreateUpdateDeleteViewSet
+from api.permissions import (
+    AuthorOrAdminOrModeratOrReadOnly,
+    IsAdminOrReadOnly,
+)
+from api.serializers import (
+    CategorySerializer,
+    GenreSerializer,
+    TitleOnlyReadSerializer,
+    TitleSerializer,
+)
 
 
 class CategoryViewSet(CreateUpdateDeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [ReadOnly, IsAdmin]
+    permission_classes = [IsAdminOrReadOnly]
     pagination_class = PageNumberPagination
 
 
 class GenreViewSet(CreateUpdateDeleteViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = [ReadOnly, IsAdmin]
+    permission_classes = [IsAdminOrReadOnly]
     pagination_class = PageNumberPagination
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    permission_classes = [ReadOnly, IsAdmin]
+    permission_classes = [IsAdminOrReadOnly]
     pagination_class = PageNumberPagination
 
     def get_serializer_class(self):

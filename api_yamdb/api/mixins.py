@@ -1,8 +1,8 @@
-from rest_framework import mixins
+from rest_framework import mixins, viewsets
 
 
 class CreateUpdateDeleteViewSet(
-    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
     mixins.DestroyModelMixin,
     mixins.CreateModelMixin,
     viewsets.GenericViewSet,

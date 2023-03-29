@@ -1,6 +1,6 @@
-from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 User = (
     get_user_model()
@@ -60,13 +60,11 @@ class Title(models.Model):
         "Название",
         max_length=256,
         db_index=True,
-        related_name="titles",
     )
     year = models.IntegerField(
         "Год выпуска",
         null=False,
         db_index=True,
-        related_name="titles",
     )
 
     class Meta:
@@ -88,7 +86,6 @@ class Review(models.Model):
         null=False,
         db_index=True,
         validators=(MinValueValidator(1), MaxValueValidator(10)),
-        error_message={"validators": "Оценка может быть только от 1 до 10"},
     )
     text = models.TextField("Текс оценки", null=False, blank=False)
     author = models.ForeignKey(
