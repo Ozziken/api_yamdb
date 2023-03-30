@@ -1,21 +1,25 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
 )
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Review, Comment
 
 from api.mixins import CreateUpdateDeleteViewSet
 from api.permissions import (
     AuthorOrAdminOrModeratOrReadOnly,
     IsAdminOrReadOnly,
+    IsAuthor,
 )
 from api.serializers import (
     CategorySerializer,
     GenreSerializer,
     TitleOnlyReadSerializer,
     TitleSerializer,
+    ReviewSerializer,
+    CommentSerializer,
 )
 
 
@@ -42,3 +46,43 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ("list", "retrieve"):
             return TitleOnlyReadSerializer
         return TitleSerializer
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """Вьюсет модели ревью на произведение."""
+
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    # здесь нужно определиться с пермишенами, ведь не только автор может
+    # изменять ревью.
+    pagination_class = PageNumberPagination
+    serializer_class = ReviewSerializer
+
+    def get_title(self):
+        title_id = self.kwargs.get("title_id")
+        return get_object_or_404(Review, pk=title_id)
+
+    def get_queryset(self):
+        return self.get_title().reviews.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_title())
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """Вьюсет модели комментария к ревью на произведение."""
+
+    permission_classes = (IsAuthor,)
+    # здесь нужно определиться с пермишенами, ведь не только автор может
+    # изменять комменты.
+    pagination_class = PageNumberPagination
+    serializer_class = CommentSerializer
+
+    def get_review(self):
+        review_id = self.kwargs.get("review_id")
+        return get_object_or_404(Review, pk=review_id)
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_review())
