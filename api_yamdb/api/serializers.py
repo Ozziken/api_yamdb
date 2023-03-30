@@ -1,7 +1,7 @@
 import datetime as dt
 
 from rest_framework import serializers
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Genre, Title
 
 from django.shortcuts import get_object_or_404
 
@@ -32,15 +32,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = (
-            "id",
-            "name",
-            "year",
-            "rating",
-            "description",
-            "genre",
-            "category",
-        )
+        fields = ("id", "name", "year", "rating", "description", "genre", "category")
 
         def validate_year(self, data):
             if data >= dt.datetime.now().year:
@@ -57,15 +49,7 @@ class TitleOnlyReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = (
-            "id",
-            "name",
-            "year",
-            "rating",
-            "description",
-            "genre",
-            "category",
-        )
+        fields = ("id", "name", "year", "rating", "description", "genre", "category")
         read_only_fields = (
             "id",
             "name",
@@ -75,58 +59,3 @@ class TitleOnlyReadSerializer(serializers.ModelSerializer):
             "genre",
             "category",
         )
-
-
-class CommentSerializer(serializers.ModelSerializer):
-    """Сериализатор модели комментария к ревью."""
-
-    author = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field="username",
-    )
-
-    read_only_fields = ("review",)
-
-    class Meta:
-        fields = (
-            "id",
-            "author",
-            "review",
-            "text",
-            "created",
-        )
-        model = Comment
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    """Сериализатор модели ревью на произведение."""
-
-    title = serializers.SlugRelatedField(
-        slug_field="title",
-    )
-    score = serializers.IntegerField()
-    author = serializers.SlugRelatedField(
-        slug_field="username",
-        read_only=True,
-        default=serializers.CurrentUserDefault(),
-    )
-
-    read_only_fields = (
-        "id",
-        "pub_date",
-        "author",
-    )
-
-    comments = CommentSerializer(many=True, required=False, read_only=True)
-
-    class Meta:
-        fields = (
-            "id",
-            "text",
-            "pub_date",
-            "author",
-            "title",
-            "rating",
-            "comments",
-        )
-        model = Review
