@@ -1,11 +1,12 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
 )
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
+
+from django.shortcuts import get_object_or_404
 
 from api.mixins import CreateUpdateDeleteViewSet
 from api.permissions import (
@@ -15,11 +16,11 @@ from api.permissions import (
 )
 from api.serializers import (
     CategorySerializer,
+    CommentSerializer,
     GenreSerializer,
+    ReviewSerializer,
     TitleOnlyReadSerializer,
     TitleSerializer,
-    ReviewSerializer,
-    CommentSerializer,
 )
 
 
@@ -51,9 +52,10 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет модели ревью на произведение."""
 
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    # здесь нужно определиться с пермишенами, ведь не только автор может
-    # изменять ревью.
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        AuthorOrAdminOrModeratOrReadOnly,
+    )
     pagination_class = PageNumberPagination
     serializer_class = ReviewSerializer
 
@@ -71,9 +73,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет модели комментария к ревью на произведение."""
 
-    permission_classes = (IsAuthor,)
-    # здесь нужно определиться с пермишенами, ведь не только автор может
-    # изменять комменты.
+    permission_classes = (
+        IsAuthor,
+        AuthorOrAdminOrModeratOrReadOnly,
+    )
     pagination_class = PageNumberPagination
     serializer_class = CommentSerializer
 

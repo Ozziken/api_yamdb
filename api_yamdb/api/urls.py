@@ -4,10 +4,10 @@ from django.urls import include, path
 
 from api.views import (
     CategoryViewSet,
-    GenreViewSet,
-    TitleViewSet,
-    ReviewViewSet,
     CommentViewSet,
+    GenreViewSet,
+    ReviewViewSet,
+    TitleViewSet,
 )
 
 router = DefaultRouter()
