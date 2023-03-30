@@ -1,9 +1,9 @@
 import datetime as dt
 
 from rest_framework import serializers
-from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
-from django.shortcuts import get_object_or_404
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -129,3 +129,62 @@ class ReviewSerializer(serializers.ModelSerializer):
             "comments",
         )
         model = Review
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "bio",
+            "role",
+        )
+
+    def validate_username(self, value):
+        if (value == 'me'):
+            raise serializers.ValidationError(
+                "Нельзя использовать me в качестве username"
+            )
+        return value
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            "email",
+            "username"
+        )
+
+    def validate_username(self, value):
+        if (value == "me"):
+            raise serializers.ValidationError(
+                "Нельзя использовать me в качестве username"
+            )
+        return value
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "bio",
+            "role",
+        )
+        read_only_fields = ("role",)
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        max_length=150, validators=[UnicodeUsernameValidator, ]
+    )
+    confirmation_code = serializers.CharField()
