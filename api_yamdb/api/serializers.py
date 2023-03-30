@@ -1,7 +1,7 @@
 import datetime as dt
 
 from rest_framework import serializers
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
 
 from django.shortcuts import get_object_or_404
 
@@ -85,23 +85,22 @@ class CommentSerializer(serializers.ModelSerializer):
         slug_field="username",
     )
 
-    read_only_fields = ("review",)
-
     class Meta:
         fields = (
             "id",
             "author",
-            "review",
             "text",
             "created",
         )
         model = Comment
+        read_only_fields = ("review",)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели ревью на произведение."""
 
     title = serializers.SlugRelatedField(
+        read_only=True,
         slug_field="title",
     )
     score = serializers.IntegerField()
