@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "djoser",
     "api",
     "reviews",
+    "core",
 ]
 
 MIDDLEWARE = [
