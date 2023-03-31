@@ -5,19 +5,29 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Category, Comment, Genre, Review, Title
+from users.models import User
 
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from api.mixins import CreateUpdateDeleteViewSet
 from api.permissions import (AuthorOrAdminOrModeratOrReadOnly,
-                             IsAdminOrReadOnly, IsAuthor)
+                             IsAdminOrReadOnly, IsAuthor,)
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, ReviewSerializer,
                              SignUpSerializer, TitleOnlyReadSerializer,
                              TitleSerializer, TokenSerializer,
                              UserMeSerializer, UserSerializer)
+
+ALLOWED_METHODS = ('get', 'post', 'patch', 'delete')
+
+
+class ListCreateDestroyViewSet(
+    mixins.CreateModelMixin, mixins.ListModelMixin,
+    mixins.DestroyModelMixin, viewsets.GenericViewSet
+):
+    pass
 
 
 class CategoryViewSet(CreateUpdateDeleteViewSet):
@@ -94,19 +104,20 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
     filter_backends = (filters.SearchFilter,)
     search_fields = ("username",)
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthenticated, IsAdminOrReadOnly,)
+    http_method_names = ALLOWED_METHODS
 
     @action(
         methods=["get", "patch"], detail=False,
-        url_path="me", permission_classes=(IsAuthor,)
+        url_path="me", permission_classes=(IsAuthenticated,)
     )
-    def me_user(self, request):
-        if request.method == "GET":
-            user = User.objects.get(username=request.user)
-            serializer = self.get_serializer(user)
-            return Response(serializer.data)
+    def get(self, request):
+        queryset = User.objects.get(username=request.user.username)
+        serializer = UserMeSerializer(queryset)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        user = User.objects.get(username=request.user)
+    def patch(self, request):
+        user = User.objects.get(username=request.user.username)
         serializer = UserMeSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -130,8 +141,10 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             user = User.objects.get(username=username)
             code = user.confirmation_code
             send_mail(
-                code,
-                [request.data.get("email")],
+                f'Добро пожаловать в YaMDb, {user.username}!',
+                (f'Ваш confirmation_code: {code} '),
+                'yamdb@yandex.ru',
+                [request.data.get('email')],
                 fail_silently=False,
             )
             return Response(
@@ -166,4 +179,3 @@ class TokenViewSet(viewsets.ViewSet):
         return Response(
             serializer.errors, status=status.HTTP_400_BAD_REQUEST
         )
-
