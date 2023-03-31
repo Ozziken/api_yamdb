@@ -2,7 +2,7 @@ import datetime as dt
 
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
-
+from users.models import User
 from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
@@ -129,6 +129,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             "comments",
         )
         model = Review
+
 
 class UserSerializer(serializers.ModelSerializer):
 

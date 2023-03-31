@@ -1,89 +1,25 @@
-from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
-
-class User(AbstractUser):
-
-    USER = "user"
-    MODERATOR = "moderator"
-    ADMIN = "admin"
-
-    USER_ROLES = [
-        (USER, "user"),
-        (MODERATOR, "moderator"),
-        (ADMIN, "admin"),
-    ]
-    email = models.EmailField(
-        max_length=254,
-        unique=True,
-    )
-    bio = models.TextField(
-        verbose_name="Биография",
-        blank=True,
-    )
-    role = models.CharField(
-        verbose_name="Роль пользователя",
-        max_length=10,
-        choices=USER_ROLES,
-        default="user",
-    )
-    confirmation_code = models.CharField(
-        verbose_name="Токен пользователя",
-        max_length=100,
-        blank=True,
-        null=True,
-    )
-
-    @property
-    def is_admin(self):
-        return self.role == self.ADMIN or self.is_superuser
-
-    @property
-    def is_moderator(self):
-        return self.role == self.MODERATOR
-
-    @property
-    def is_user(self):
-        return self.role == self.USER
-
-    class Meta:
-        ordering = ("username",)
-
-        def __str__(self):
-            return self.username
+from users.models import User
 
 
 class Category(models.Model):
+    name = models.CharField(
+        "Название",
+        max_length=256,
+    )
     slug = models.SlugField(
         "Slug",
         max_length=50,
         unique=True,
-    )
-    name = models.CharField(
-        "Название",
-        max_length=256,
     )
 
     class Meta:
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
 
-
-class Category(models.Model):
-    slug = models.SlugField(
-        "Slug",
-        max_length=50,
-        unique=True,
-    )
-    name = models.CharField(
-        "Название",
-        max_length=256,
-    )
-
-    class Meta:
-        verbose_name = "Категория"
-        verbose_name_plural = "Категории"
+    def __str__(self):
+        return self.name
 
 
 class Genre(models.Model):

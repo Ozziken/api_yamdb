@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,6 +21,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "users",
     "rest_framework",
     "djoser",
     "api",
@@ -75,7 +77,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -111,3 +112,17 @@ USE_TZ = True
 STATIC_URL = "/static/"
 
 STATICFILES_DIRS = ((BASE_DIR / "static/"),)
+
+#EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+#EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+
+
+AUTH_USER_MODEL = 'users.User'
