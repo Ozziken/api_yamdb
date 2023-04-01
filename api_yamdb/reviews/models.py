@@ -1,4 +1,4 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, validate_slug
 from django.db import models
 from users.models import User
 
@@ -12,11 +12,14 @@ class Category(models.Model):
         "Slug",
         max_length=50,
         unique=True,
+        validators=[validate_slug],
     )
 
     class Meta:
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
+        default_related_name = "categories"
+        ordering = ("name",)
 
     def __str__(self):
         return self.name
@@ -27,6 +30,7 @@ class Genre(models.Model):
         "Slug",
         max_length=50,
         unique=True,
+        validators=[validate_slug],
     )
     name = models.CharField(
         "Название",
@@ -36,6 +40,11 @@ class Genre(models.Model):
     class Meta:
         verbose_name = "Жанр"
         verbose_name_plural = "Жанры"
+        default_related_name = "genres"
+        ordering = ("name",)
+
+    def __str__(self):
+        return self.name
 
 
 class Title(models.Model):
@@ -103,9 +112,7 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Автор комментария",
     )
-    review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, verbose_name="Ревью"
-    )
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, verbose_name="Ревью")
 
     class Meta:
         verbose_name = "Комментарий"
