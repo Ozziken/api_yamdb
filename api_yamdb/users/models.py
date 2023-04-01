@@ -1,9 +1,10 @@
 import uuid
-from django.contrib.auth.models import AbstractUser
-from django.db import models
-from django.conf import settings
+
 from users.validators import CustomUsernameValidator
 
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 CHOICES = (
     ("user", "Пользователь"),

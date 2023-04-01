@@ -1,13 +1,18 @@
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
+
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+
 from api.mixins import CreateUpdateDeleteViewSet
 from api.permissions import (
     AuthorOrAdminOrModeratOrReadOnly,
@@ -26,6 +31,7 @@ from api.serializers import (
     UserMeSerializer,
     UserSerializer,
 )
+
 
 ALLOWED_METHODS = ("get", "post", "patch", "delete")
 
@@ -153,7 +159,8 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         if User.objects.filter(
-            username=request.data.get("username"), email=request.data.get("email")
+            username=request.data.get("username"),
+            email=request.data.get("email"),
         ):
             user = User.objects.get(username=request.data.get("username"))
             serializer = SignUpSerializer(user, data=request.data)
@@ -180,10 +187,16 @@ class TokenViewSet(viewsets.ViewSet):
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            user = get_object_or_404(User, username=request.data.get("username"))
-            if str(user.confirmation_code) == request.data.get("confirmation_code"):
+            user = get_object_or_404(
+                User, username=request.data.get("username")
+            )
+            if str(user.confirmation_code) == request.data.get(
+                "confirmation_code"
+            ):
                 refresh = RefreshToken.for_user(user)
                 token = {"token": str(refresh.access_token)}
                 return Response(token, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

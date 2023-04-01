@@ -2,16 +2,9 @@ from rest_framework.routers import DefaultRouter
 
 from django.urls import include, path
 
-from api.views import (
-    CategoryViewSet,
-    CommentViewSet,
-    GenreViewSet,
-    ReviewViewSet,
-    TitleViewSet,
-    UserViewSet,
-    SignUpViewSet,
-    TokenViewSet,
-)
+from api.views import (CategoryViewSet, CommentViewSet, GenreViewSet,
+                       ReviewViewSet, SignUpViewSet, TitleViewSet,
+                       TokenViewSet, UserViewSet)
 
 r"^posts/(?P<post_id>\d+)/comments"
 router = DefaultRouter()
