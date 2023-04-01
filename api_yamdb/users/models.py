@@ -6,27 +6,25 @@ from users.validators import CustomUsernameValidator
 
 
 CHOICES = (
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
+    ("user", "Пользователь"),
+    ("moderator", "Модератор"),
+    ("admin", "Администратор"),
 )
 
 
 class User(AbstractUser):
 
     username = models.CharField(
-        ('username'),
+        ("username"),
         max_length=150,
         unique=True,
         validators=[CustomUsernameValidator()],
         error_messages={
-            'unique': (
-                'Пользователь с таким именем пользователя уже существует.'
-            ),
+            "unique": ("Пользователь с таким именем пользователя уже существует."),
         },
     )
     email = models.EmailField(
-        'Адрес электронной почты',
+        "Адрес электронной почты",
         max_length=254,
         unique=True,
     )
@@ -39,24 +37,24 @@ class User(AbstractUser):
         blank=True,
     )
     bio = models.TextField(
-        'Биография',
+        "Биография",
         blank=True,
     )
     role = models.CharField(
-        'Пользовательская роль',
+        "Пользовательская роль",
         max_length=16,
         choices=CHOICES,
-        default='user',
+        default="user",
     )
     confirmation_code = models.UUIDField(
-        'Код для получения/обновления токена',
+        "Код для получения/обновления токена",
         default=uuid.uuid4,
         editable=False,
-        unique=True
+        unique=True,
     )
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username", "password"]
 
     @property
     def is_user(self):
@@ -72,6 +70,6 @@ class User(AbstractUser):
 
     class Meta:
 
-        ordering = ('-id', )
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        ordering = ("-id",)
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"

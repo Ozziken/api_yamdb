@@ -21,13 +21,13 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField()
+    rating = serializers.IntegerField(required=False)
     year = serializers.IntegerField()
     category = serializers.SlugRelatedField(
         slug_field="slug", queryset=Category.objects.all()
     )
     genre = serializers.SlugRelatedField(
-        slug_field="slug", queryset=Genre.objects.all()
+        slug_field="slug", many=True, queryset=Genre.objects.all()
     )
 
     class Meta:
@@ -132,7 +132,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = (
@@ -145,24 +144,33 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def validate_username(self, value):
-        if (value == 'me'):
+        if value == "me":
             raise serializers.ValidationError(
                 "Нельзя использовать me в качестве username"
             )
         return value
 
+    def get_fields(self, request):
+        if request.method == "POST" and request.user.is_admin:
+            fields = (
+                "username",
+                "email",
+                "password",
+                "first_name",
+                "last_name",
+                "bio",
+                "role",
+            )
+            return fields
+
 
 class SignUpSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
-        fields = (
-            "email",
-            "username"
-        )
+        fields = ("email", "username")
 
     def validate_username(self, value):
-        if (value == "me"):
+        if value == "me":
             raise serializers.ValidationError(
                 "Нельзя использовать me в качестве username"
             )
@@ -170,7 +178,6 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = (
@@ -186,6 +193,9 @@ class UserMeSerializer(serializers.ModelSerializer):
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
-        max_length=150, validators=[UnicodeUsernameValidator, ]
+        max_length=150,
+        validators=[
+            UnicodeUsernameValidator,
+        ],
     )
     confirmation_code = serializers.CharField()
