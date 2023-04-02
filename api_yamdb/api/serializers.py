@@ -3,6 +3,7 @@ import datetime as dt
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
 from users.models import User
+
 from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
@@ -91,6 +92,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "author",
             "text",
             "created",
+            "score",
         )
         model = Comment
         read_only_fields = ("review",)
@@ -99,10 +101,6 @@ class CommentSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели ревью на произведение."""
 
-    title = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field="title",
-    )
     score = serializers.IntegerField()
     author = serializers.SlugRelatedField(
         slug_field="username",
@@ -125,8 +123,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             "pub_date",
             "author",
             "title",
-            "rating",
             "comments",
+            "score",
+            "category",
         )
         model = Review
 
