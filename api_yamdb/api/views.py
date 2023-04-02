@@ -5,11 +5,15 @@ from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
 )
+from rest_framework.exceptions import MethodNotAllowed
+from django_filters.rest_framework import DjangoFilterBackend
+from django.core.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.models import Category, Genre, Review, Title
 from users.models import User
-
+from rest_framework.exceptions import ValidationError
+from .filters import TitleFilter
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
@@ -18,6 +22,7 @@ from api.permissions import (
     AuthorOrAdminOrModeratOrReadOnly,
     IsAdminOrReadOnly,
     IsAuthor,
+    IsAuthenticatedOrCreateOnly,
 )
 from api.serializers import (
     CategorySerializer,
@@ -32,7 +37,6 @@ from api.serializers import (
     UserSerializer,
 )
 
-
 ALLOWED_METHODS = ("get", "post", "patch", "delete")
 
 
@@ -40,6 +44,7 @@ class ListCreateDestroyViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin,
+    mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
     pass
@@ -49,26 +54,47 @@ class CategoryViewSet(CreateUpdateDeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
-    pagination_class = PageNumberPagination
     search_fields = ["name"]
     filter_backends = [filters.SearchFilter]
+    lookup_field = "slug"
+    search_fields = ("name",)
+    pagination_class = PageNumberPagination
+
+    # def retrieve(self, request, *args, **kwargs):
+    #     if (
+    #         request.method == "GET"
+    #         and self.action == "retrieve"
+    #         and "slug" in kwargs
+    #     ):
+    #         raise MethodNotAllowed(request.method)
+    #     return super().retrieve(request, *args, **kwargs)
 
 
 class GenreViewSet(CreateUpdateDeleteViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = [IsAdminOrReadOnly]
-    pagination_class = PageNumberPagination
     search_fields = ["name"]
     filter_backends = [filters.SearchFilter]
+    lookup_field = "slug"
+    search_fields = ("name",)
+    pagination_class = PageNumberPagination
+
+    # def retrieve(self, request, *args, **kwargs):
+    #     if (
+    #         request.method == "GET"
+    #         and self.action == "retrieve"
+    #         and "slug" in kwargs
+    #     ):
+    #         raise MethodNotAllowed(request.method)
+    #     return super().retrieve(request, *args, **kwargs)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = [IsAdminOrReadOnly]
-    pagination_class = PageNumberPagination
-    search_fields = ["name"]
-    filter_backends = [filters.SearchFilter]
+    # filterset_class = TitleFilter
+    filter_backends = [filters.OrderingFilter]
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
@@ -79,29 +105,34 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет модели ревью на произведение."""
 
+    pagination_class = PageNumberPagination
     permission_classes = (
         IsAuthenticatedOrReadOnly,
         AuthorOrAdminOrModeratOrReadOnly,
     )
-    pagination_class = PageNumberPagination
     serializer_class = ReviewSerializer
 
-    def get_title(self):
-        title_id = self.kwargs.get("title_id")
-        return get_object_or_404(Review, pk=title_id)
-
     def get_queryset(self):
-        return self.get_title().reviews.all()
+        title_id = self.kwargs.get("title_id")
+        title = get_object_or_404(Title, id=title_id)
+        return title.reviews.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, review=self.get_title())
+        title_id = self.kwargs.get("title_id")
+        title = get_object_or_404(Title, id=title_id)
+        user = self.request.user
+        # if Review.objects.filter(title=title, author=user).exists():
+        #     serializer.validated_data["text"] = ""
+        #     raise ValidationError("Вы уже оставили отзыв на это произведение")
+
+        serializer.save(author=user, title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет модели комментария к ревью на произведение."""
 
     permission_classes = (
-        IsAuthor,
+        IsAuthenticatedOrCreateOnly,
         AuthorOrAdminOrModeratOrReadOnly,
     )
     pagination_class = PageNumberPagination
@@ -109,7 +140,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_review(self):
         review_id = self.kwargs.get("review_id")
-        return get_object_or_404(Review, pk=review_id)
+        return get_object_or_404(Review, id=review_id)
 
     def get_queryset(self):
         return self.get_review().comments.all()
@@ -161,7 +192,7 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         if User.objects.filter(
             username=request.data.get("username"),
             email=request.data.get("email"),
-        ):
+        ).exists():
             user = User.objects.get(username=request.data.get("username"))
             serializer = SignUpSerializer(user, data=request.data)
         if serializer.is_valid():

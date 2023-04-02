@@ -21,7 +21,9 @@ class User(AbstractUser):
         unique=True,
         validators=[CustomUsernameValidator()],
         error_messages={
-            "unique": ("Пользователь с таким именем пользователя уже существует."),
+            "unique": (
+                "Пользователь с таким именем пользователя уже существует."
+            ),
         },
     )
     email = models.EmailField(

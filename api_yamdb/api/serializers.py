@@ -1,7 +1,7 @@
 import datetime as dt
-
+import rest_framework.serializers
 from rest_framework import serializers
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 from django.contrib.auth.validators import UnicodeUsernameValidator
@@ -25,7 +25,7 @@ class TitleSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(required=False)
     year = serializers.IntegerField()
     category = serializers.SlugRelatedField(
-        slug_field="slug", queryset=Category.objects.all()
+        slug_field="slug", queryset=Category.objects.all(), many=False
     )
     genre = serializers.SlugRelatedField(
         slug_field="slug", many=True, queryset=Genre.objects.all()
@@ -43,12 +43,12 @@ class TitleSerializer(serializers.ModelSerializer):
             "category",
         )
 
-        def validate_year(self, data):
-            if data >= dt.datetime.now().year:
-                raise serializers.ValidationError(
-                    "Год произведения не может быть больше текущего!",
-                )
-            return data
+    def validate_year(self, data):
+        if data >= dt.datetime.now().year and data < 0:
+            raise serializers.ValidationError(
+                "Введите корректный год!",
+            )
+        return data
 
 
 class TitleOnlyReadSerializer(serializers.ModelSerializer):
@@ -91,7 +91,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "id",
             "author",
             "text",
-            "created",
+            "pub_date",
         )
         model = Comment
         read_only_fields = ("review",)
@@ -101,20 +101,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор модели ревью на произведение."""
 
     title = serializers.SlugRelatedField(
-        read_only=True,
-        slug_field="title",
+        slug_field="id", queryset=Title.objects.all(), required=False
     )
     score = serializers.IntegerField()
     author = serializers.SlugRelatedField(
         slug_field="username",
         read_only=True,
         default=serializers.CurrentUserDefault(),
-    )
-
-    read_only_fields = (
-        "id",
-        "pub_date",
-        "author",
     )
 
     comments = CommentSerializer(many=True, required=False, read_only=True)
@@ -126,8 +119,13 @@ class ReviewSerializer(serializers.ModelSerializer):
             "pub_date",
             "author",
             "title",
-            "rating",
+            "score",
             "comments",
+        )
+        read_only_fields = (
+            "id",
+            "pub_date",
+            "author",
         )
         model = Review
 
