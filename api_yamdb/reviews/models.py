@@ -1,6 +1,11 @@
-from django.core.validators import MaxValueValidator, MinValueValidator, validate_slug
-from django.db import models
 from users.models import User
+
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+    validate_slug,
+)
+from django.db import models
 
 
 class Category(models.Model):
@@ -112,7 +117,11 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Автор комментария",
     )
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, verbose_name="Ревью")
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        verbose_name="Ревью",
+    )
 
     class Meta:
         verbose_name = "Комментарий"

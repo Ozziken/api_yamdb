@@ -1,9 +1,10 @@
 import uuid
-from django.contrib.auth.models import AbstractUser
-from django.db import models
-from django.conf import settings
+
 from users.validators import CustomUsernameValidator
 
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 CHOICES = (
     ("user", "Пользователь"),
@@ -13,14 +14,15 @@ CHOICES = (
 
 
 class User(AbstractUser):
-
     username = models.CharField(
         ("username"),
         max_length=150,
         unique=True,
         validators=[CustomUsernameValidator()],
         error_messages={
-            "unique": ("Пользователь с таким именем пользователя уже существует."),
+            "unique": (
+                "Пользователь с таким именем пользователя уже существует."
+            ),
         },
     )
     email = models.EmailField(
@@ -69,7 +71,6 @@ class User(AbstractUser):
         return self.role == settings.MODERATOR
 
     class Meta:
-
         ordering = ("-id",)
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"

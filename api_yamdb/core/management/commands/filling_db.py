@@ -1,6 +1,8 @@
-from django.core.management.base import BaseCommand
-import pandas
 import sqlite3
+
+import pandas
+
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
@@ -8,12 +10,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         db = {
-            "static/data/category.csv": "category",
-            "static/data/comments.csv": "comments",
-            "static/data/genre.csv": "genre",
-            "static/data/genre_title.csv": "genre_title",
-            "static/data/review.csv": "review",
-            "static/data/titles.csv": "titles",
+            "static/data/category.csv": "reviews_category",
+            "static/data/comments.csv": "reviews_comments",
+            "static/data/genre.csv": "reviews_genre",
+            "static/data/genre_title.csv": "reviews_genre_title",
+            "static/data/review.csv": "reviews_review",
+            "static/data/titles.csv": "reviews_title",
             "static/data/users.csv": "users",
         }
 
