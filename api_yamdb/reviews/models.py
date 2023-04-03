@@ -5,7 +5,11 @@ from django.core.validators import (
     MinValueValidator,
     validate_slug,
 )
+from django.core.exceptions import BadRequest
+from rest_framework import status
 from django.db import models
+from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 
 class Category(models.Model):
@@ -58,6 +62,9 @@ class Title(models.Model):
         verbose_name="Категория",
         on_delete=models.PROTECT,
         related_name="titles",
+        db_index=True,
+        blank=True,
+        null=True,
     )
     description = models.TextField(
         "Описание",
@@ -68,6 +75,8 @@ class Title(models.Model):
         Genre,
         verbose_name="Жанр",
         related_name="titles",
+        blank=True,
+        db_index=True,
     )
     name = models.CharField(
         "Название",
@@ -91,14 +100,16 @@ class Title(models.Model):
 class Review(models.Model):
     title = models.ForeignKey(
         Title,
-        verbose_name="Произведение",
         on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Произведение",
+        db_index=True,
+        null=False,
     )
     score = models.IntegerField(
         "Оценка",
-        null=False,
         db_index=True,
-        validators=(MinValueValidator(1), MaxValueValidator(10)),
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
     )
     text = models.TextField("Текст ревью", null=False, blank=False)
     author = models.ForeignKey(
@@ -107,6 +118,23 @@ class Review(models.Model):
         verbose_name="Автор ревью",
     )
     pub_date = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ("-pub_date",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["title", "author"], name="unique_title_author"
+            )
+        ]
+
+        default_related_name = "reviews"
+
+    def create(self):
+        reviews_author = Review.objects.filter(
+            author=self.author, title=self.title
+        )
+        if reviews_author.count() > 1:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class Comment(models.Model):
@@ -118,11 +146,10 @@ class Comment(models.Model):
         verbose_name="Автор комментария",
     )
     review = models.ForeignKey(
-        Review,
-        on_delete=models.CASCADE,
-        verbose_name="Ревью",
+        Review, on_delete=models.CASCADE, verbose_name="Ревью"
     )
 
     class Meta:
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
+        default_related_name = "comments"

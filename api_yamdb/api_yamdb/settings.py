@@ -13,7 +13,7 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 
-# Application definition
+# Application definitiop
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -56,10 +56,12 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend"
     ],
 }
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
 TEMPLATES_DIR = BASE_DIR / "templates"
 TEMPLATES = [
     {
