@@ -129,6 +129,17 @@ class ReviewSerializer(serializers.ModelSerializer):
         )
         model = Review
 
+    def validate(self, data):
+        if self.context.get("request").method != "POST":
+            return data
+        author = self.context.get("request").user
+        title_id = self.context.get("view").kwargs.get("title_id")
+        if Review.objects.filter(author=author, title=title_id).exists():
+            raise serializers.ValidationError(
+                "Нельзя оставлять повторный отзыв."
+            )
+        return data
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
