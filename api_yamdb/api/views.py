@@ -50,6 +50,10 @@ class ListCreateDestroyViewSet(
     pass
 
 
+# Добваил ради изменений в коде для комита
+a = 1
+
+
 class CategoryViewSet(CreateUpdateDeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -218,16 +222,10 @@ class TokenViewSet(viewsets.ViewSet):
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            user = get_object_or_404(
-                User, username=request.data.get("username")
-            )
-            if str(user.confirmation_code) == request.data.get(
-                "confirmation_code"
-            ):
+            user = get_object_or_404(User, username=request.data.get("username"))
+            if str(user.confirmation_code) == request.data.get("confirmation_code"):
                 refresh = RefreshToken.for_user(user)
                 token = {"token": str(refresh.access_token)}
                 return Response(token, status=status.HTTP_200_OK)
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
