@@ -5,7 +5,11 @@ from django.core.validators import (
     MinValueValidator,
     validate_slug,
 )
+from django.core.exceptions import BadRequest
+from rest_framework import status
 from django.db import models
+from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 
 class Category(models.Model):
@@ -104,9 +108,8 @@ class Review(models.Model):
     )
     score = models.IntegerField(
         "Оценка",
-        null=False,
         db_index=True,
-        validators=(MinValueValidator(1), MaxValueValidator(10)),
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
     )
     text = models.TextField("Текст ревью", null=False, blank=False)
     author = models.ForeignKey(
@@ -120,11 +123,16 @@ class Review(models.Model):
         ordering = ("-pub_date",)
         constraints = [
             models.UniqueConstraint(
-                fields=["title", "author"], name="unique_review"
+                fields=["title", "author"], name="unique_title_author"
             )
         ]
 
         default_related_name = "reviews"
+
+    def create(self):
+        reviews_author = Review.objects.filter(author=self.author, title=self.title)
+        if reviews_author.count() > 1:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class Comment(models.Model):
@@ -135,9 +143,7 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Автор комментария",
     )
-    review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, verbose_name="Ревью"
-    )
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, verbose_name="Ревью")
 
     class Meta:
         verbose_name = "Комментарий"

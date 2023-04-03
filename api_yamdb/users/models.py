@@ -5,6 +5,7 @@ from users.validators import CustomUsernameValidator
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from .validators import username_me
 
 CHOICES = (
     ("user", "Пользователь"),
@@ -19,11 +20,9 @@ class User(AbstractUser):
         ("username"),
         max_length=150,
         unique=True,
-        validators=[CustomUsernameValidator()],
+        validators=[CustomUsernameValidator(), username_me],
         error_messages={
-            "unique": (
-                "Пользователь с таким именем пользователя уже существует."
-            ),
+            "unique": ("Пользователь с таким именем пользователя уже существует."),
         },
     )
     email = models.EmailField(

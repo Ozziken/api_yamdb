@@ -5,6 +5,7 @@ from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
 )
+from django.core.exceptions import BadRequest
 from rest_framework.exceptions import MethodNotAllowed
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.exceptions import PermissionDenied
@@ -50,10 +51,6 @@ class ListCreateDestroyViewSet(
     pass
 
 
-# Добваил ради изменений в коде для комита
-a = 1
-
-
 class CategoryViewSet(CreateUpdateDeleteViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -64,14 +61,18 @@ class CategoryViewSet(CreateUpdateDeleteViewSet):
     search_fields = ("name",)
     pagination_class = PageNumberPagination
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     if (
-    #         request.method == "GET"
-    #         and self.action == "retrieve"
-    #         and "slug" in kwargs
-    #     ):
-    #         raise MethodNotAllowed(request.method)
-    #     return super().retrieve(request, *args, **kwargs)
+    @action(
+        detail=False,
+        methods=["delete"],
+        url_path=r"(?P<slug>\w+)",
+        lookup_field="slug",
+        url_name="category_slug",
+    )
+    def get_category(self, request, slug):
+        category = self.get_object()
+        serializer = CategorySerializer(category)
+        category.delete()
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class GenreViewSet(CreateUpdateDeleteViewSet):
@@ -84,24 +85,28 @@ class GenreViewSet(CreateUpdateDeleteViewSet):
     search_fields = ("name",)
     pagination_class = PageNumberPagination
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     if (
-    #         request.method == "GET"
-    #         and self.action == "retrieve"
-    #         and "slug" in kwargs
-    #     ):
-    #         raise MethodNotAllowed(request.method)
-    #     return super().retrieve(request, *args, **kwargs)
+    @action(
+        detail=False,
+        methods=["delete"],
+        url_path=r"(?P<slug>\w+)",
+        lookup_field="slug",
+        url_name="category_slug",
+    )
+    def get_genre(self, request, slug):
+        category = self.get_object()
+        serializer = CategorySerializer(category)
+        category.delete()
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = [IsAdminOrReadOnly]
-    # filterset_class = TitleFilter
-    filter_backends = [filters.OrderingFilter]
+    filterset_class = TitleFilter
+    filter_backends = [DjangoFilterBackend]
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrieve"):
+        if self.action in ("list", "retrieve", "delete"):
             return TitleOnlyReadSerializer
         return TitleSerializer
 
@@ -124,12 +129,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title_id = self.kwargs.get("title_id")
         title = get_object_or_404(Title, id=title_id)
-        user = self.request.user
-        # if Review.objects.filter(title=title, author=user).exists():
-        #     serializer.validated_data["text"] = ""
-        #     raise ValidationError("Вы уже оставили отзыв на это произведение")
-
-        serializer.save(author=user, title=title)
+        serializer.save(author=self.request.user, title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
