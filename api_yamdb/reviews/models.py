@@ -1,15 +1,15 @@
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 from users.models import User
 
+from django.core.exceptions import BadRequest
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
     validate_slug,
 )
-from django.core.exceptions import BadRequest
-from rest_framework import status
 from django.db import models
-from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
 
 
 class Category(models.Model):
@@ -107,9 +107,12 @@ class Review(models.Model):
         null=False,
     )
     score = models.IntegerField(
-        "Оценка",
+        verbose_name="Рейтинг",
         db_index=True,
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(10),
+        ],
     )
     text = models.TextField("Текст ревью", null=False, blank=False)
     author = models.ForeignKey(
@@ -121,11 +124,11 @@ class Review(models.Model):
 
     class Meta:
         ordering = ("-pub_date",)
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=["title", "author"], name="unique_title_author"
-            )
-        ]
+                fields=["author", "title"], name="unique_author_title"
+            ),
+        )
 
         default_related_name = "reviews"
 

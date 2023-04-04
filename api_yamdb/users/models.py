@@ -4,6 +4,7 @@ from users.validators import CustomUsernameValidator
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 from .validators import username_me
 
 

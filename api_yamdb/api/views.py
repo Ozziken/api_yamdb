@@ -1,16 +1,22 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
 )
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
+
 from .filters import TitleFilter
+from django.core.exceptions import BadRequest, PermissionDenied
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
@@ -22,6 +28,7 @@ from api.permissions import (
     IsAdminOrReadOnly,
     IsAuthenticatedOrCreateOnly,
     IsAdminRole,
+    IsAuthor,
 )
 from api.serializers import (
     CategorySerializer,
@@ -36,6 +43,8 @@ from api.serializers import (
     UserSerializer,
 )
 
+from .filters import TitleFilter
+ALLOWED_METHODS = ("get", "post", "patch", "delete")
 
 class ListCreateDestroyViewSet(
     mixins.CreateModelMixin,
@@ -96,13 +105,13 @@ class GenreViewSet(CreateUpdateDeleteViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg("reviews__score")).all()
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = TitleFilter
     filter_backends = [DjangoFilterBackend]
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrieve", "delete"):
+        if self.request.method == "GET":
             return TitleOnlyReadSerializer
         return TitleSerializer
 

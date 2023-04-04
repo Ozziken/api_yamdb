@@ -1,9 +1,11 @@
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+
 from .models import Review
-from rest_framework import status
-from rest_framework.response import Response
 
 
 @receiver(pre_save, sender=Review)

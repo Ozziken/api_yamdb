@@ -11,12 +11,12 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         db = {
             "static/data/category.csv": "reviews_category",
-            "static/data/comments.csv": "reviews_comments",
+            "static/data/comments.csv": "reviews_comment",
             "static/data/genre.csv": "reviews_genre",
             "static/data/genre_title.csv": "reviews_genre_title",
             "static/data/review.csv": "reviews_review",
             "static/data/titles.csv": "reviews_title",
-            "static/data/users.csv": "users_users",
+            "static/data/users.csv": "users_user",
         }
 
         for path, name in db.items():
