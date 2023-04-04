@@ -2,20 +2,22 @@ import uuid
 
 from users.validators import CustomUsernameValidator
 
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from .validators import username_me
 
-CHOICES = (
-    ("user", "Пользователь"),
-    ("moderator", "Модератор"),
-    ("admin", "Администратор"),
-)
-
 
 class User(AbstractUser):
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+    CHOICES = (
+        ("user", "Пользователь"),
+        ("moderator", "Модератор"),
+        ("admin", "Администратор"),
+    )
+
     username = models.CharField(
         ("username"),
         max_length=150,
@@ -30,6 +32,7 @@ class User(AbstractUser):
     email = models.EmailField(
         "Адрес электронной почты",
         max_length=254,
+        blank=False,
         unique=True,
     )
     first_name = models.CharField(
@@ -40,15 +43,16 @@ class User(AbstractUser):
         max_length=150,
         blank=True,
     )
-    bio = models.TextField(
-        "Биография",
-        blank=True,
-    )
     role = models.CharField(
         "Пользовательская роль",
         max_length=16,
         choices=CHOICES,
-        default="user",
+        default=USER,
+        error_messages={'validators': 'Выбрана несуществующая роль'}
+    )
+    bio = models.TextField(
+        "Биография",
+        blank=True,
     )
     confirmation_code = models.UUIDField(
         "Код для получения/обновления токена",
@@ -66,13 +70,17 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.is_staff or self.role == settings.ADMIN
+        return self.role == self.ADMIN or self.is_staff
 
     @property
     def is_moderator(self):
-        return self.role == settings.MODERATOR
+        return self.role == self.MODERATOR
 
     class Meta:
         ordering = ("-id",)
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+
+    def __str__(self):
+        return self.name
+

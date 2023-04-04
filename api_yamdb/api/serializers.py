@@ -1,11 +1,8 @@
 import datetime as dt
-
-import rest_framework.serializers
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.models import User
-
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from users.models import User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -157,10 +154,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             "username",
             "email",
+            "role",
             "first_name",
             "last_name",
             "bio",
-            "role",
         )
 
     def validate_username(self, value):
@@ -169,19 +166,6 @@ class UserSerializer(serializers.ModelSerializer):
                 "Нельзя использовать me в качестве username"
             )
         return value
-
-    def get_fields(self, request):
-        if request.method == "POST" and request.user.is_admin:
-            fields = (
-                "username",
-                "email",
-                "password",
-                "first_name",
-                "last_name",
-                "bio",
-                "role",
-            )
-            return fields
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -197,25 +181,33 @@ class SignUpSerializer(serializers.ModelSerializer):
         return value
 
 
-class UserMeSerializer(serializers.ModelSerializer):
+class UserMeSerializer(UserSerializer):
     class Meta:
         model = User
         fields = (
             "username",
             "email",
+            "role",
             "first_name",
             "last_name",
             "bio",
-            "role",
         )
         read_only_fields = ("role",)
 
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
+        required=True,
         max_length=150,
         validators=[
             UnicodeUsernameValidator,
         ],
     )
-    confirmation_code = serializers.CharField()
+    confirmation_code = serializers.CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'confirmation_code'
+        )
