@@ -2,9 +2,12 @@ import datetime as dt
 import rest_framework.serializers
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title
+from django.contrib.auth import get_user_model
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.generics import get_object_or_404
 from users.models import User
 
-from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -136,10 +139,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             "username",
             "email",
+            "role",
             "first_name",
             "last_name",
             "bio",
-            "role",
         )
 
     def validate_username(self, value):
@@ -154,11 +157,10 @@ class UserSerializer(serializers.ModelSerializer):
             fields = (
                 "username",
                 "email",
-                "password",
+                "role",
                 "first_name",
                 "last_name",
                 "bio",
-                "role",
             )
             return fields
 
@@ -176,25 +178,38 @@ class SignUpSerializer(serializers.ModelSerializer):
         return value
 
 
-class UserMeSerializer(serializers.ModelSerializer):
+class UserMeSerializer(UserSerializer):
     class Meta:
         model = User
         fields = (
             "username",
             "email",
+            "role",
             "first_name",
             "last_name",
             "bio",
-            "role",
         )
         read_only_fields = ("role",)
 
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
+        required=True,
         max_length=150,
         validators=[
             UnicodeUsernameValidator,
         ],
     )
-    confirmation_code = serializers.CharField()
+    confirmation_code = serializers.CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'confirmation_code'
+        )
+
+
+#class TokenSerializer(serializers.Serializer):
+#    email = serializers.EmailField(required=True)
+#    confirmation_code = serializers.CharField(required=True)

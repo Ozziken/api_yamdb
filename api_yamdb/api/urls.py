@@ -9,8 +9,8 @@ from api.views import (
     ReviewViewSet,
     SignUpViewSet,
     TitleViewSet,
-    TokenViewSet,
     UserViewSet,
+    Token,
 )
 
 r"^posts/(?P<post_id>\d+)/comments"
@@ -28,10 +28,15 @@ router.register(
 )
 router.register(r"users", UserViewSet)
 router.register("auth/signup", SignUpViewSet, basename="sign-up")
-router.register("auth/token", TokenViewSet, basename="token")
+#router.register("auth/token", TokenViewSet, basename="token")
 
+token = [
+    #path('auth/email/', SendEmail.as_view(), name='send_email'),
+    path('auth/token/', Token.as_view(), name='get_token'),
+]
 
 urlpatterns = [
+    path('v1/', include(token)),
     path("v1/", include("djoser.urls")),
     path("v1/", include("djoser.urls.jwt")),
     path("v1/", include(router.urls)),
