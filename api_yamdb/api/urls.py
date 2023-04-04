@@ -9,8 +9,8 @@ from api.views import (
     ReviewViewSet,
     SignUpViewSet,
     TitleViewSet,
-    UserViewSet,
     Token,
+    UserViewSet,
 )
 
 r"^posts/(?P<post_id>\d+)/comments"
@@ -30,10 +30,10 @@ router.register(r"users", UserViewSet)
 router.register("auth/signup", SignUpViewSet, basename="sign-up")
 
 token = [
-    path('auth/token/', Token.as_view(), name='get_token'),
+    path("auth/token/", Token.as_view(), name="get_token"),
 ]
 
 urlpatterns = [
-    path('v1/', include(token)),
+    path("v1/", include(token)),
     path("v1/", include(router.urls)),
 ]

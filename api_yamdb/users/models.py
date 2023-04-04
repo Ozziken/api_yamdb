@@ -9,9 +9,9 @@ from .validators import username_me
 
 
 class User(AbstractUser):
-    USER = 'user'
-    MODERATOR = 'moderator'
-    ADMIN = 'admin'
+    USER = "user"
+    MODERATOR = "moderator"
+    ADMIN = "admin"
     CHOICES = (
         ("user", "Пользователь"),
         ("moderator", "Модератор"),
@@ -48,7 +48,7 @@ class User(AbstractUser):
         max_length=16,
         choices=CHOICES,
         default=USER,
-        error_messages={'validators': 'Выбрана несуществующая роль'}
+        error_messages={"validators": "Выбрана несуществующая роль"},
     )
     bio = models.TextField(
         "Биография",
@@ -83,4 +83,3 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.name
-

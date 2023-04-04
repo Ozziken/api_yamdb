@@ -1,8 +1,10 @@
 import datetime as dt
+
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from users.models import User
+
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -207,7 +209,4 @@ class TokenSerializer(serializers.Serializer):
 
     class Meta:
         model = User
-        fields = (
-            'username',
-            'confirmation_code'
-        )
+        fields = ("username", "confirmation_code")
