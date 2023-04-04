@@ -1,30 +1,28 @@
-from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
 )
-from django.core.exceptions import BadRequest
-from rest_framework.exceptions import MethodNotAllowed
-from django_filters.rest_framework import DjangoFilterBackend
-from django.core.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-from rest_framework.exceptions import ValidationError
-from .filters import TitleFilter
+
+from django.core.exceptions import BadRequest, PermissionDenied
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 
 from api.mixins import CreateUpdateDeleteViewSet
 from api.permissions import (
     AuthorOrAdminOrModeratOrReadOnly,
     IsAdminOrReadOnly,
-    IsAuthor,
     IsAuthenticatedOrCreateOnly,
+    IsAuthor,
 )
 from api.serializers import (
     CategorySerializer,
@@ -38,6 +36,8 @@ from api.serializers import (
     UserMeSerializer,
     UserSerializer,
 )
+
+from .filters import TitleFilter
 
 ALLOWED_METHODS = ("get", "post", "patch", "delete")
 

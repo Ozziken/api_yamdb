@@ -72,7 +72,9 @@ class Test05ReviewAPI:
             "ответ со статусом 401."
         )
 
-    def test_02_review_post(self, admin_client, user_client, moderator_client, admin):
+    def test_02_review_post(
+        self, admin_client, user_client, moderator_client, admin
+    ):
         titles, _, _ = create_titles(admin_client)
         title_0_reviews_count = 0
 
@@ -110,7 +112,8 @@ class Test05ReviewAPI:
             from reviews.models import Review, Title
         except Exception as e:
             assert False, (
-                "Не удалось импортировать модели из приложения reviews. " f"Ошибка: {e}"
+                "Не удалось импортировать модели из приложения reviews. "
+                f"Ошибка: {e}"
             )
         title = Title.objects.get(pk=titles[0]["id"])
         review = None
@@ -182,7 +185,9 @@ class Test05ReviewAPI:
         )
 
         url = f'/api/v1/titles/{titles[0]["id"]}/reviews/'
-        response = user_client.get(f'/api/v1/titles/{titles[0]["id"]}/reviews/')
+        response = user_client.get(
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/'
+        )
         assert response.status_code == HTTPStatus.OK, (
             "Проверьте, что GET-запрос авторизованного пользователя к "
             "`/api/v1/titles/{title_id}/reviews/` возвращает ответ со "
@@ -244,7 +249,8 @@ class Test05ReviewAPI:
             f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[0]["id"]}/'
         )
         assert response.status_code != HTTPStatus.NOT_FOUND, (
-            f"Эндпоинт `{url_template}` не найден. Проверьте настройки в " "*urls.py*."
+            f"Эндпоинт `{url_template}` не найден. Проверьте настройки в "
+            "*urls.py*."
         )
         assert response.status_code == HTTPStatus.OK, (
             "Проверьте, что GET-запрос неавторизованного пользователя к "
@@ -252,8 +258,12 @@ class Test05ReviewAPI:
         )
         review = response.json()
 
-        expected_data = {key: value for key, value in reviews[0].items() if key != "id"}
-        check_fields("review", url_template, review, expected_data, detail=True)
+        expected_data = {
+            key: value for key, value in reviews[0].items() if key != "id"
+        }
+        check_fields(
+            "review", url_template, review, expected_data, detail=True
+        )
 
     def test_04_review_detail_user(
         self,
@@ -301,12 +311,12 @@ class Test05ReviewAPI:
             "к его собственному отзыву через `{url_template}` содержится поле "
             "`{field}` - то это поле отзыва будет изменено."
         )
-        assert data.get("text") == new_data["text"], assert_msg_template.format(
-            url_template=url_template, field="text"
-        )
-        assert data.get("score") == new_data["score"], assert_msg_template.format(
-            url_template=url_template, field="score"
-        )
+        assert (
+            data.get("text") == new_data["text"]
+        ), assert_msg_template.format(url_template=url_template, field="text")
+        assert (
+            data.get("score") == new_data["score"]
+        ), assert_msg_template.format(url_template=url_template, field="score")
 
         response = user_client.patch(
             f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[2]["id"]}/',
@@ -326,7 +336,9 @@ class Test05ReviewAPI:
             f"его собственному отзыву через `{url_template}` возвращает "
             "статус 204."
         )
-        response = user_client.get(f'/api/v1/titles/{titles[0]["id"]}/reviews/')
+        response = user_client.get(
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/'
+        )
         test_data = response.json()["results"]
         assert len(test_data) == len(reviews) - 1, (
             "Проверьте, что DELETE-запрос пользователя с ролью `user` к его "

@@ -1,15 +1,15 @@
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 from users.models import User
 
+from django.core.exceptions import BadRequest
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
     validate_slug,
 )
-from django.core.exceptions import BadRequest
-from rest_framework import status
 from django.db import models
-from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
 
 
 class Category(models.Model):
