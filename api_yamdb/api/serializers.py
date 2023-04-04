@@ -22,7 +22,6 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField(required=False)
     year = serializers.IntegerField()
     category = serializers.SlugRelatedField(
         slug_field="slug", queryset=Category.objects.all(), many=False
@@ -37,7 +36,6 @@ class TitleSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "year",
-            "rating",
             "description",
             "genre",
             "category",
@@ -50,9 +48,15 @@ class TitleSerializer(serializers.ModelSerializer):
             )
         return data
 
+    def to_representation(self, title):
+        serializer = TitleOnlyReadSerializer(title)
+        return serializer.data
+
 
 class TitleOnlyReadSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField(
+        read_only=True,
+    )
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
 
@@ -139,6 +143,11 @@ class ReviewSerializer(serializers.ModelSerializer):
                 "Нельзя оставлять повторный отзыв."
             )
         return data
+
+    def validate_score(self, score):
+        if not (1 <= score <= 10):
+            raise serializers.ValidationError("Проверьте оценку!")
+        return score
 
 
 class UserSerializer(serializers.ModelSerializer):

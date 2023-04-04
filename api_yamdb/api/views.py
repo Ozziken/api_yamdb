@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -100,13 +101,13 @@ class GenreViewSet(CreateUpdateDeleteViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg("reviews__score")).all()
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = TitleFilter
     filter_backends = [DjangoFilterBackend]
 
     def get_serializer_class(self):
-        if self.action in ("list", "retrieve", "delete"):
+        if self.request.method == "GET":
             return TitleOnlyReadSerializer
         return TitleSerializer
 
