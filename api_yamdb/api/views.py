@@ -20,7 +20,6 @@ from api.mixins import CreateUpdateDeleteViewSet
 from api.permissions import (
     AuthorOrAdminOrModeratOrReadOnly,
     IsAdminOrReadOnly,
-    IsAuthor,
     IsAuthenticatedOrCreateOnly,
     IsAdminRole,
 )
@@ -165,24 +164,23 @@ class UserViewSet(viewsets.ModelViewSet):
         detail=False,
         permission_classes=(IsAuthenticated,),
         url_path='me')
-    def get_current_user_info(self, request):
+    def me(self, request):
         serializer = UserSerializer(request.user)
         if request.method == 'PATCH':
             if request.user.is_admin:
-                serializer = UserSerializer(
-                    request.user,
-                    data=request.data,
-                    partial=True)
-            else:
                 serializer = UserMeSerializer(
                     request.user,
                     data=request.data,
                     partial=True)
+            else:
+                serializer = UserSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True)
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.save(role=request.user.role, partial=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return UserSerializer
-    #Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):

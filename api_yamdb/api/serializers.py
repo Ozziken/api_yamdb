@@ -1,13 +1,8 @@
 import datetime as dt
-import rest_framework.serializers
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title
-from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.generics import get_object_or_404
 from users.models import User
-
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -152,18 +147,6 @@ class UserSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def get_fields(self, request):
-        if request.method == "POST" and request.user.is_admin:
-            fields = (
-                "username",
-                "email",
-                "role",
-                "first_name",
-                "last_name",
-                "bio",
-            )
-            return fields
-
 
 class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
@@ -208,8 +191,3 @@ class TokenSerializer(serializers.Serializer):
             'username',
             'confirmation_code'
         )
-
-
-#class TokenSerializer(serializers.Serializer):
-#    email = serializers.EmailField(required=True)
-#    confirmation_code = serializers.CharField(required=True)
