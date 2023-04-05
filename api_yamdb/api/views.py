@@ -1,43 +1,26 @@
+from api.mixins import CreateUpdateDeleteViewSet
+from api.permissions import (AuthorOrAdminOrModeratOrReadOnly,
+                             IsAdminOrReadOnly, IsAdminRole,
+                             IsAuthenticatedOrCreateOnly)
+from api.serializers import (CategorySerializer, CommentSerializer,
+                             GenreSerializer, ReviewSerializer,
+                             SignUpSerializer, TitleOnlyReadSerializer,
+                             TitleSerializer, TokenSerializer,
+                             UserMeSerializer, UserSerializer)
+from django.core.mail import send_mail
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import MethodNotAllowed, ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-
-from django.core.exceptions import BadRequest, PermissionDenied
-from django.core.mail import send_mail
-from django.db.models import Avg
-from django.shortcuts import get_object_or_404
-
-from api.mixins import CreateUpdateDeleteViewSet
-from api.permissions import (
-    AuthorOrAdminOrModeratOrReadOnly,
-    IsAdminOrReadOnly,
-    IsAdminRole,
-    IsAuthenticatedOrCreateOnly,
-    IsAuthor,
-)
-from api.serializers import (
-    CategorySerializer,
-    CommentSerializer,
-    GenreSerializer,
-    ReviewSerializer,
-    SignUpSerializer,
-    TitleOnlyReadSerializer,
-    TitleSerializer,
-    TokenSerializer,
-    UserMeSerializer,
-    UserSerializer,
-)
 
 from .filters import TitleFilter
 from .utils import check_confirmation_code
@@ -56,6 +39,8 @@ class ListCreateDestroyViewSet(
 
 
 class CategoryViewSet(CreateUpdateDeleteViewSet):
+    """Вьюсет модели категорий."""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
@@ -80,6 +65,8 @@ class CategoryViewSet(CreateUpdateDeleteViewSet):
 
 
 class GenreViewSet(CreateUpdateDeleteViewSet):
+    """Вьюсет модели жанров."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = [IsAdminOrReadOnly]
@@ -104,6 +91,8 @@ class GenreViewSet(CreateUpdateDeleteViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Вьюсет модели произведений."""
+
     queryset = Title.objects.annotate(rating=Avg("reviews__score")).all()
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = TitleFilter
@@ -158,6 +147,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет модели юзера."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = [
@@ -198,6 +189,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """Вьюсет для регистрации."""
+
     permission_classes = (permissions.AllowAny,)
     serializer_class = SignUpSerializer
 
@@ -226,6 +219,8 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
 
 class Token(APIView):
+    """Вьюсет для получения токена."""
+
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):

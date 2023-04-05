@@ -29,12 +29,9 @@ class IsAuthenticatedOrCreateOnly(BasePermission):
         return request.user and request.user.is_authenticated
 
 
-class IsAuthor(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return request.method in SAFE_METHODS or obj.author == request.user
-
-
 class IsAdminOrReadOnly(BasePermission):
+    """Проверка пользователя на роль админа или только на чтение."""
+
     def has_permission(self, request, view):
         return (
             request.method in SAFE_METHODS
@@ -44,6 +41,8 @@ class IsAdminOrReadOnly(BasePermission):
 
 
 class IsAdminRole(BasePermission):
+    """Проверка пользователя на роль админа."""
+
     def has_permission(self, request, view):
         return request.user.is_admin or request.user.is_staff
 

@@ -5,6 +5,8 @@ from django.utils.deconstruct import deconstructible
 
 @deconstructible
 class CustomUsernameValidator(validators.RegexValidator):
+    """Валидатор для username юзера."""
+
     regex = r"^(?!me\b)[\w.@+-]+$"
     message = (
         "Имя пользователя может содержать только буквы, цифры и символы "

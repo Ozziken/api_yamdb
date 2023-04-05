@@ -1,18 +1,14 @@
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    validate_slug)
+from django.db import models
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from users.models import User
 
-from django.core.exceptions import BadRequest
-from django.core.validators import (
-    MaxValueValidator,
-    MinValueValidator,
-    validate_slug,
-)
-from django.db import models
-
 
 class Category(models.Model):
+    """Модель для категорий."""
+
     name = models.CharField(
         "Название",
         max_length=256,
@@ -35,6 +31,8 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
+    """Модель для жанров."""
+
     slug = models.SlugField(
         "Slug",
         max_length=50,
@@ -57,6 +55,8 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
+    """Модель для произведений."""
+
     category = models.ForeignKey(
         Category,
         verbose_name="Категория",
@@ -98,6 +98,8 @@ class Title(models.Model):
 
 
 class Review(models.Model):
+    """Модель для отзывов."""
+
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -133,14 +135,14 @@ class Review(models.Model):
         default_related_name = "reviews"
 
     def create(self):
-        reviews_author = Review.objects.filter(
-            author=self.author, title=self.title
-        )
+        reviews_author = Review.objects.filter(author=self.author, title=self.title)
         if reviews_author.count() > 1:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class Comment(models.Model):
+    """Модель для комментариев."""
+
     text = models.TextField("Текст комментария", null=False, blank=False)
     pub_date = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(
@@ -148,9 +150,7 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Автор комментария",
     )
-    review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, verbose_name="Ревью"
-    )
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, verbose_name="Ревью")
 
     class Meta:
         verbose_name = "Комментарий"

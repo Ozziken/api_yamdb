@@ -11,4 +11,6 @@ class CreateUpdateDeleteViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
+    """Кастомный миксин для жанров и категорий."""
+
     permission_classes = (IsAdminOrReadOnly,)

@@ -1,13 +1,14 @@
 import datetime as dt
 
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
-from django.contrib.auth.validators import UnicodeUsernameValidator
-
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Cериалайзер для категорий."""
+
     class Meta:
         model = Category
         exclude = ("id",)
@@ -15,6 +16,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Cериалайзер для жанров."""
+
     class Meta:
         model = Genre
         exclude = ("id",)
@@ -22,6 +25,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    """Cериалайзер для произведений."""
+
     year = serializers.IntegerField()
     category = serializers.SlugRelatedField(
         slug_field="slug", queryset=Category.objects.all(), many=False
@@ -54,6 +59,8 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleOnlyReadSerializer(serializers.ModelSerializer):
+    """Cериалайзер для получения списка произведений."""
+
     rating = serializers.IntegerField(
         read_only=True,
     )
@@ -139,9 +146,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         author = self.context.get("request").user
         title_id = self.context.get("view").kwargs.get("title_id")
         if Review.objects.filter(author=author, title=title_id).exists():
-            raise serializers.ValidationError(
-                "Нельзя оставлять повторный отзыв."
-            )
+            raise serializers.ValidationError("Нельзя оставлять повторный отзыв.")
         return data
 
     def validate_score(self, score):
@@ -151,6 +156,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Cериалайзер для юзеров."""
+
     class Meta:
         model = User
         fields = (
@@ -171,6 +178,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    """Cериалайзер для регистрации новых юзеров."""
+
     class Meta:
         model = User
         fields = ("email", "username")
@@ -184,6 +193,8 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class UserMeSerializer(UserSerializer):
+    """Cериалайзер для получения информации о юзере."""
+
     class Meta:
         model = User
         fields = (
@@ -198,6 +209,8 @@ class UserMeSerializer(UserSerializer):
 
 
 class TokenSerializer(serializers.Serializer):
+    """Cериалайзер для получения токена."""
+
     username = serializers.CharField(
         required=True,
         max_length=150,

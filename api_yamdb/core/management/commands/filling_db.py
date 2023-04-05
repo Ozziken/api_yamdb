@@ -1,7 +1,6 @@
 import sqlite3
 
 import pandas
-
 from django.core.management.base import BaseCommand
 
 
