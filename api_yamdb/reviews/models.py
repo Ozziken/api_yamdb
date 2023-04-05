@@ -1,5 +1,8 @@
-from django.core.validators import (MaxValueValidator, MinValueValidator,
-                                    validate_slug)
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+    validate_slug,
+)
 from django.db import models
 from rest_framework import status
 from rest_framework.response import Response
@@ -135,7 +138,9 @@ class Review(models.Model):
         default_related_name = "reviews"
 
     def create(self):
-        reviews_author = Review.objects.filter(author=self.author, title=self.title)
+        reviews_author = Review.objects.filter(
+            author=self.author, title=self.title
+        )
         if reviews_author.count() > 1:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -150,7 +155,9 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Автор комментария",
     )
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, verbose_name="Ревью")
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, verbose_name="Ревью"
+    )
 
     class Meta:
         verbose_name = "Комментарий"
