@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
-# SECRET_KEY = "p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs"
 
 DEBUG = True
 
@@ -20,10 +19,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "users",
     "rest_framework",
     "django_filters",
     "djoser",
+    "users",
     "api",
     "reviews",
     "core",
@@ -120,6 +119,7 @@ STATICFILES_DIRS = ((BASE_DIR / "static/"),)
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
+DEFAULT_FROM_EMAIL = "yamdb@yandex.ru"
 
 EMAIL_HOST = "smtp.gmail.com"
 
