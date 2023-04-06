@@ -2,6 +2,7 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 from users.validators import CustomUsernameValidator
 
 from .validators import username_me
@@ -26,7 +27,9 @@ class User(AbstractUser):
         unique=True,
         validators=[CustomUsernameValidator(), username_me],
         error_messages={
-            "unique": ("Пользователь с таким именем пользователя уже существует."),
+            "unique": (
+                "Пользователь с таким именем пользователя уже существует."
+            ),
         },
     )
     email = models.EmailField(

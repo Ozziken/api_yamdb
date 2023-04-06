@@ -2,6 +2,7 @@ import datetime as dt
 
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
+
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
@@ -146,7 +147,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         author = self.context.get("request").user
         title_id = self.context.get("view").kwargs.get("title_id")
         if Review.objects.filter(author=author, title=title_id).exists():
-            raise serializers.ValidationError("Нельзя оставлять повторный отзыв.")
+            raise serializers.ValidationError(
+                "Нельзя оставлять повторный отзыв."
+            )
         return data
 
     def validate_score(self, score):
