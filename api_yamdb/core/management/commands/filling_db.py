@@ -21,7 +21,6 @@ class Command(BaseCommand):
         for path, name in db.items():
             df = pandas.read_csv(path)
             con = sqlite3.connect("db.sqlite3")
-            # cur = con.cursor()
             df.to_sql(
                 name,
                 con,

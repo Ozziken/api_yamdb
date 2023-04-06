@@ -1,3 +1,6 @@
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
 from api.views import (
     CategoryViewSet,
     CommentViewSet,
@@ -8,8 +11,6 @@ from api.views import (
     Token,
     UserViewSet,
 )
-from django.urls import include, path
-from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r"genres", GenreViewSet, basename="genres")

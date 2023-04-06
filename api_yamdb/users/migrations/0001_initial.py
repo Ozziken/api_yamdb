@@ -4,8 +4,9 @@ import uuid
 
 import django.contrib.auth.models
 import django.utils.timezone
-import users.validators
 from django.db import migrations, models
+
+import users.validators
 
 
 class Migration(migrations.Migration):

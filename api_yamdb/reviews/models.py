@@ -4,9 +4,10 @@ from django.core.validators import (
     validate_slug,
 )
 from django.db import models
-from rest_framework import status
-from rest_framework.response import Response
+
 from users.models import User
+
+from .validators import validate_year
 
 
 class Category(models.Model):
@@ -87,9 +88,7 @@ class Title(models.Model):
         db_index=True,
     )
     year = models.IntegerField(
-        "Год выпуска",
-        null=False,
-        db_index=True,
+        "Год выпуска", null=False, db_index=True, validators=[validate_year]
     )
 
     class Meta:
@@ -98,6 +97,12 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        super().clean()
+
+        if self.year is not None:
+            validate_year(self.year)
 
 
 class Review(models.Model):
@@ -129,20 +134,13 @@ class Review(models.Model):
 
     class Meta:
         ordering = ("-pub_date",)
-        constraints = (
+        constraints = [
             models.UniqueConstraint(
-                fields=["author", "title"], name="unique_author_title"
+                name="unique_title_author",
+                fields=["title", "author"],
             ),
-        )
-
+        ]
         default_related_name = "reviews"
-
-    def create(self):
-        reviews_author = Review.objects.filter(
-            author=self.author, title=self.title
-        )
-        if reviews_author.count() > 1:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class Comment(models.Model):

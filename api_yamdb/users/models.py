@@ -2,9 +2,16 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 from users.validators import CustomUsernameValidator
 
 from .validators import username_me
+
+
+class Role(models.TextChoices):
+    USER = "user", "Пользователь"
+    MODERATOR = "moderator", "Модератор"
+    ADMIN = "admin", "Администратор"
 
 
 class User(AbstractUser):
@@ -13,11 +20,6 @@ class User(AbstractUser):
     USER = "user"
     MODERATOR = "moderator"
     ADMIN = "admin"
-    CHOICES = (
-        ("user", "Пользователь"),
-        ("moderator", "Модератор"),
-        ("admin", "Администратор"),
-    )
 
     username = models.CharField(
         ("username"),
@@ -47,7 +49,7 @@ class User(AbstractUser):
     role = models.CharField(
         "Пользовательская роль",
         max_length=16,
-        choices=CHOICES,
+        choices=Role.choices,
         default=USER,
         error_messages={"validators": "Выбрана несуществующая роль"},
     )

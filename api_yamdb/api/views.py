@@ -1,3 +1,18 @@
+from django.core.mail import send_mail
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken
+
 from api.mixins import CreateUpdateDeleteViewSet
 from api.permissions import (
     AuthorOrAdminOrModeratOrReadOnly,
@@ -17,20 +32,6 @@ from api.serializers import (
     UserMeSerializer,
     UserSerializer,
 )
-from django.core.mail import send_mail
-from django.db.models import Avg
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, permissions, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
@@ -69,7 +70,7 @@ class CategoryViewSet(CreateUpdateDeleteViewSet):
         lookup_field="slug",
         url_name="category_slug",
     )
-    def get_category(self, request, slug):
+    def delete_category(self, request, slug):
         category = self.get_object()
         serializer = CategorySerializer(category)
         category.delete()
@@ -95,7 +96,7 @@ class GenreViewSet(CreateUpdateDeleteViewSet):
         lookup_field="slug",
         url_name="category_slug",
     )
-    def get_genre(self, request, slug):
+    def delete_genre(self, request, slug):
         category = self.get_object()
         serializer = CategorySerializer(category)
         category.delete()
@@ -105,7 +106,11 @@ class GenreViewSet(CreateUpdateDeleteViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет модели произведений."""
 
-    queryset = Title.objects.annotate(rating=Avg("reviews__score")).all()
+    queryset = (
+        Title.objects.annotate(rating=Avg("reviews__score"))
+        .select_related("category")
+        .prefetch_related("genre")
+    )
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = TitleFilter
     filter_backends = [DjangoFilterBackend]
@@ -129,7 +134,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         title_id = self.kwargs.get("title_id")
         title = get_object_or_404(Title, id=title_id)
-        return title.reviews.all()
+        return title.reviews.select_related("author")
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get("title_id")
@@ -152,7 +157,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Review, id=review_id)
 
     def get_queryset(self):
-        return self.get_review().comments.all()
+        return self.get_review().comments.select_related("author")
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
@@ -222,7 +227,7 @@ class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             send_mail(
                 f"Добро пожаловать в YaMDb, {user.username}!",
                 (f"Ваш confirmation_code: {code} "),
-                "yamdb@yandex.ru",
+                None,
                 [request.data.get("email")],
                 fail_silently=False,
             )
